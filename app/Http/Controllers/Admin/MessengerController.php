@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\StoreMessageRequest;
 use App\Http\Requests\UpdateMessageRequest;
+use App\Mail\EmailMessenger;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\User;
 use Illuminate\Support\Facades\Auth;
 use App\MessengerTopic;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Mail;
 
 class MessengerController extends Controller
 {
@@ -47,18 +49,22 @@ class MessengerController extends Controller
      */
     public function store(StoreMessageRequest $request)
     {
-        $sender = Auth::user()->id;
+        $sender = Auth::user();
+        $sender_id = $sender->id;
 
         MessengerTopic::create([
             'subject'     => $request->input('subject'),
-            'sender_id'   => $sender,
+            'sender_id'   => $sender_id,
             'receiver_id' => $request->input('receiver'),
             'sent_at'     => Carbon::now(),
         ])->read()
             ->messages()->create([
-                'sender_id' => $sender,
+                'sender_id' => $sender_id,
                 'content'   => $request->input('content'),
             ]);
+
+        $recipient = User::find($request->input('receiver'));
+        Mail::to($recipient)->send(new EmailMessenger($request->input('subject'), $request->input('content')));
 
         return redirect()->route('admin.messenger.index');
     }
