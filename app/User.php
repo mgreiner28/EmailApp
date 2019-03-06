@@ -65,4 +65,35 @@ class User extends Authenticatable
     {
        $this->notify(new ResetPassword($token));
     }
+
+    public function scopeAdmins($query) {
+        $query->whereHas('role', function ($query) {
+            $query->where('role_user.role_id', Role::ADMIN);
+        });
+    }
+
+    public function scopeNonAdmins($query) {
+        $query->whereHas('role', function ($query) {
+            $query->where('role_user.role_id', Role::SIMPLE_USER);
+        });
+    }
+    public function is($role) {
+        switch($role) {
+            case 'admin':
+                foreach ($this->role as $role) {
+                    if ($role->id == Role::ADMIN) {
+                        return true;
+                    }
+                }
+                break;
+            case 'simple_user':
+                foreach ($this->role as $role) {
+                    if ($role->id == Role::SIMPLE_USER) {
+                        return true;
+                    }
+                }
+                break;
+        }
+        return false;
+    }
 }

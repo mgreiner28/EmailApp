@@ -36,7 +36,13 @@ class MessengerController extends Controller
      */
     public function create()
     {
-        $users = User::all()->pluck('email', 'id');
+        if (Auth::user()->is('simple_user')) {
+            $users = User::admins()->get()->pluck('email', 'id');
+        } else {
+            $users = User::all()->pluck('email', 'id');
+        }
+        
+        //dd(\Illuminate\Support\Facades\DB::getQueryLog());
 
         return view('admin.messenger.create', compact('users'));
     }

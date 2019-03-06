@@ -14,7 +14,8 @@ class Role extends Model
     protected $fillable = ['title'];
     protected $hidden = [];
     
-    
+    const ADMIN = 1;
+    const SIMPLE_USER = 2;     
     
     public function permission()
     {
